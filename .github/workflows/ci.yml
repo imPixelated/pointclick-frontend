@@ -1,0 +1,36 @@
+name: CI - Frontend
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o código
+        uses: actions/checkout@v4
+
+      - name: Instalar o Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Instalar dependências
+        run: npm ci
+
+      # O lint não bloqueia o pipeline; os avisos aparecem no log.
+      - name: Verificar estilo do código (lint)
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Testes unitários
+        run: npm run test:run
+
+      - name: Build de produção
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: https://pointclick-backend-hrr4.onrender.com
